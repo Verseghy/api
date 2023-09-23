@@ -1,0 +1,154 @@
+openapi: 3.1.0
+info:
+  title: Verseghy Admin API
+  description: |-
+    TODO
+  contact:
+    email: contact@zoltanszepesi.com
+  license:
+    name: MIT
+    url: https://github.com/Verseghy/api/blob/master/LICENSE
+  version: 1.0.0
+servers:
+  - url: https://admin-api.verseghy-gimnazium.net/v1
+tags:
+  - name: competition
+    description: Operations about Competitions
+paths:
+  /competition/{competitionID}:
+    patch:
+      tags:
+        - competition
+      summary: Update an existing competition
+      description: Update an existing competition
+      operationId: updateCompetition
+      requestBody:
+        description: Update an existing competition
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Competition'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Competition'
+        default: 
+          description: TODO
+      security:
+        - admin_auth:
+            - admin.competition.write
+components:
+  schemas:
+    ReadableIdentifier:
+      type: string
+      description: This type is commonly used for assigning IDs to objects. The general format is `{ObjectType}-{UUID v4}`, where ObjectType is the name of the object in the openapi documentation.
+      examples:
+        - Competition-6d4507a1-0cd9-40ed-8190-21d82b83b926
+        - CompetitionRound-2efa7a54-0a78-4d52-9e42-dcac6da51769
+        - Competitor-f76c8967-91e0-4457-9147-946b55b1d56a
+    SchoolYear:
+      type: integer
+      description: This type indicates a school year. A school year 2023/2024 should be represented as 2023 here.
+      examples:
+        - 2023
+    SchoolClass:
+      type: object
+      description: Represents a year and a subclass in the school.
+      required:
+        - number
+      properties:
+        number:
+          type: integer
+          enum:
+            - 9
+            - 10
+            - 11
+            - 12
+        subClass:
+          type: string
+          enum:
+            - A
+            - B
+            - C
+            - D
+    Competition:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ReadableIdentifier'
+        name:
+          type: string
+        year:
+          $ref: '#/components/schemas/SchoolYear'
+        subject:
+          type: string
+          enum:
+            - OTHER
+            - MATHEMATICS
+            - PHYSICS
+            - INFORMATICS
+    CompetitionRound:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ReadableIdentifier'
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+        tier:
+          type: string
+          enum:
+            - OTHER
+            - CITY
+            - COUNTY
+            - COUNTRY
+            - INTERNATIONAL
+    CompetitionResult:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ReadableIdentifier'
+        competitorID:
+          type: string
+          examples:
+            - Competitor-f76c8967-91e0-4457-9147-946b55b1d56a
+        class:
+          $ref: '#/components/schemas/SchoolClass'
+        teachersID:
+          type: array
+          items: 
+            type: string
+            description: The IDs of the teachers
+        placement:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - OTHER
+                - NOT_DECIDED
+                - EXACT
+            other:
+              type: string
+              description: Only specified if placement.type is OTHER
+            exact:
+              type: integer
+    CompetitionPerson:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ReadableIdentifier'
+        name:
+          type: string
+        year:
+          $ref: '#/components/schemas/SchoolYear'
+  securitySchemes:
+    admin_auth:
+      type: http
+      scheme: bearer
